@@ -1,8 +1,14 @@
 import { google } from 'googleapis';
+import moment from 'moment-timezone';
 import auth from '../lib/auth';
 
 export default async (req, res) => {
-    // const { dateMin, dateMax } = req.body;
+    const body = req.body || {};
+    const { 
+        dateStart = moment().toISOString(),
+        dateEnd = moment().add(14, 'd').toISOString(),
+        slotDuration = '15 min'
+    } = body;
 
     const access_token = req.headers['x-access-token']
     const refresh_token = req.headers['x-refresh-token']
@@ -11,16 +17,19 @@ export default async (req, res) => {
 
     const calendar = google.calendar({ version: 'v3', auth });
 
-    const response = await calendar.events.list({
-        calendarId: 'primary',
-        timeMin: (new Date()).toISOString(),
-        maxResults: 10,
-        singleEvents: true,
-        showDeleted: false,
-        orderBy: 'startTime',
-    });
+    const response = await calendar.freebusy.query({ 
+        requestBody: {
+            items: [
+                { id: 'sidhant.gandhi@gmail.com' }
+            ],
+            timeMin: dateStart,
+            timeMax: dateEnd
+        }
+    })
 
-    const events = response.data.items;
+    const freeTime = response.data.calendars;
 
-    res.status(200).json(events);
+    console.log(JSON.stringify(freeTime));
+
+    res.status(200).json(freeTime);
 };
