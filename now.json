@@ -1,0 +1,7 @@
+{
+    "version": 2,
+    "env": {
+        "client_id": "@client_id",
+        "client_secret": "@client_secret"
+    }
+}
