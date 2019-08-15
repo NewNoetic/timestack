@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
     const dailySlotEndOffsetFromStartOffset = moment.duration(8, 'hours');
     const slotDuration = moment.duration(30, 'minute');
     
-    const freeSlots = [];
+    const freeSlots = {};
 
     let currentStart = dateRangeStart
         .clone()
@@ -63,18 +63,27 @@ module.exports = async (req, res) => {
         const startPlusDuration = currentStart.clone().add(slotDuration);
         printDate(startPlusDuration, 'start plus duration');
         const { busy } = freeTime['sidhant.gandhi@gmail.com'];
-        // .filter((s) => moment.utc(s.start).isSame(startPlusDuration, 'day'));
 
-        const localCurrentStart = currentStart.clone();
+        const functionCurrentStart = currentStart.clone();
         let inBusySlot = false;
         busy.forEach((b) => {
             if (startPlusDuration.isBetween(moment.utc(b.start), moment.utc(b.end), null, '(]')) {
                 inBusySlot = true;
             }
         });
+        
         if (!inBusySlot) {
-            freeSlots.push({ start: moment(localCurrentStart), end: moment(startPlusDuration) });
-            printDate(moment(localCurrentStart), 'free slot start');
+            const freeSlot = { start: moment(functionCurrentStart), end: moment(startPlusDuration) };
+            const localTodayString = functionCurrentStart
+                .clone()
+                .tz(timeZone)
+                .format('YYYY-MM-DD');
+            if (freeSlots[localTodayString]) {
+                freeSlots[localTodayString].push(freeSlot);
+            } else {
+                freeSlots[localTodayString] = [freeSlot];
+            }
+            printDate(moment(functionCurrentStart), 'free slot start');
             printDate(moment(startPlusDuration), 'free slot end');
         }
         
