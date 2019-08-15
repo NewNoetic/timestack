@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
-    import { navigate } from 'svelte-routing'
+    import { navigate } from 'svelte-routing';
+    import moment from 'moment-timezone';
     import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../../lib/authConstants'
     export let slots;
 
@@ -29,7 +30,7 @@
     {#if slots}
         <ul>
         {#each slots as slot}
-            <li>{slot.summary}</li>
+            <li>{moment(slot.start).format('LLL')} - {moment(slot.end).format('LLL')}</li>
         {/each}
         </ul>
     {:else}

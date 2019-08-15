@@ -35,7 +35,6 @@ module.exports = {
             "1tbs"
         ],
         "callback-return": "error",
-        "camelcase": "error",
         "capitalized-comments": [
             "error",
             "never"
@@ -102,12 +101,10 @@ module.exports = {
         "max-classes-per-file": "error",
         "max-depth": "error",
         "max-lines": "error",
-        "max-lines-per-function": "error",
         "max-nested-callbacks": "error",
         "max-params": "error",
         "max-statements-per-line": "error",
         "multiline-comment-style": "error",
-        "multiline-ternary": "error",
         "new-cap": "error",
         "new-parens": "error",
         "newline-after-var": "off",
@@ -182,7 +179,6 @@ module.exports = {
         "no-sync": "error",
         "no-tabs": "error",
         "no-template-curly-in-string": "error",
-        "no-ternary": "error",
         "no-throw-literal": "error",
         "no-undef-init": "error",
         "no-undefined": "error",

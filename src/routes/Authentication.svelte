@@ -1,11 +1,18 @@
 <script>
     import { onMount } from "svelte";
+    import { navigate } from "svelte-routing";
+    import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../../lib/authConstants';
+
     export let authUrl;
 
     onMount(async () => {
-        const res = await fetch("/api/authUrl");
-        const newAuthUrl = await res.text();
-        authUrl = newAuthUrl;
+        if (localStorage.getItem(ACCESS_TOKEN_KEY) && localStorage.getItem(REFRESH_TOKEN_KEY)) {
+            navigate('/slots', { replace: true });
+        } else {
+            const res = await fetch("/api/authUrl");
+            const newAuthUrl = await res.text();
+            authUrl = newAuthUrl;
+        }
     });
 </script>
 

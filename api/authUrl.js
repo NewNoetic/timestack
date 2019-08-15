@@ -1,4 +1,4 @@
-import authClient from '../lib/auth';
+const authClient = require('../lib/auth');
 
 const scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
 

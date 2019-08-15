@@ -1,6 +1,5 @@
 yarn.lock
 README.md
 .env
-node_modules/
 .eslintrc.js
 .gitignore
