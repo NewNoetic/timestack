@@ -24,7 +24,7 @@
 <main>
     <h1>Open time slots</h1>
     <h2>
-        These are the times you are busy
+        These are the times you are free
     </h2>
     <p>
     {#if slots}

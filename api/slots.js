@@ -2,9 +2,8 @@ const { google } = require('googleapis');
 const moment = require('moment-timezone');
 const auth = require('../lib/auth');
 
-const print = (p, m) => {
-    // eslint-disable-next-line no-useless-concat
-    console.log(`${m ? `${m}: ` : ''}${JSON.stringify(p)}`);
+const printDate = (p, m) => {
+    console.log(`${m}: ${moment(p).format('LLL')}`);
 };
 
 module.exports = async (req, res) => {
@@ -46,35 +45,58 @@ module.exports = async (req, res) => {
      * else record free slot (from start to start+slot duration)
      */
 
-    const dateRangeStart = moment.utc('2019-08-14T00:00:00Z');
-    const dateRangeEnd = moment.utc('2019-08-18T00:00:00Z');
-    const dailySlotStartTime = moment.utc('01:00:00', 'HH:mm:ss');
-    const dailySlotEndTime = moment.utc('10:00:00', 'HH:mm:ss');
-    const slotDuration = moment.duration(15, 'minute');
+    const timeZone = 'America/Los_Angeles';
+    const dateRangeStart = moment.tz('2019-08-15T00:00:00', timeZone);
+    const dateRangeEnd = moment.tz('2019-08-17T00:00:00', timeZone);
+    const dailySlotStartOffsetFromStart = moment.duration(9, 'hours');
+    const dailySlotEndOffsetFromStartOffset = moment.duration(8, 'hours');
+    const slotDuration = moment.duration(30, 'minute');
     
     const freeSlots = [];
 
-    let currentStart = dateRangeStart.clone().set({
-        'hour': dailySlotStartTime.hour(),
-        'minute': dailySlotStartTime.minute(),
-        'second': dailySlotStartTime.second(),
-    });
+    let currentStart = dateRangeStart
+        .clone()
+        .add(dailySlotStartOffsetFromStart);
     
     while (currentStart.isBefore(dateRangeEnd)) {
-        print(currentStart, 'current start');
+        printDate(currentStart, 'current start');
         const startPlusDuration = currentStart.clone().add(slotDuration);
-        print(startPlusDuration, 'start plus duration');
-        const busyThatDay = freeTime['sidhant.gandhi@gmail.com'].busy.
-            filter((s) => moment.utc(s.start).isSame(startPlusDuration, 'day'));
+        printDate(startPlusDuration, 'start plus duration');
+        const { busy } = freeTime['sidhant.gandhi@gmail.com'];
+        // .filter((s) => moment.utc(s.start).isSame(startPlusDuration, 'day'));
 
         const localCurrentStart = currentStart.clone();
-        busyThatDay.forEach((b) => {
-            if (!startPlusDuration.isBetween(b.start, b.end)) {
-                freeSlots.push({ start: moment(localCurrentStart), end: moment(startPlusDuration) });
+        let inBusySlot = false;
+        busy.forEach((b) => {
+            if (startPlusDuration.isBetween(moment.utc(b.start), moment.utc(b.end), null, '(]')) {
+                inBusySlot = true;
             }
         });
+        if (!inBusySlot) {
+            freeSlots.push({ start: moment(localCurrentStart), end: moment(startPlusDuration) });
+            printDate(moment(localCurrentStart), 'free slot start');
+            printDate(moment(startPlusDuration), 'free slot end');
+        }
+        
+        const todaysSlotEndTime = currentStart.clone()
+            .hours(0)
+            .minutes(0)
+            .seconds(0)
+            .add(dailySlotStartOffsetFromStart)
+            .add(dailySlotEndOffsetFromStartOffset);
 
-        currentStart = startPlusDuration.clone();
+        printDate(todaysSlotEndTime, 'todays slot end time');
+
+        if (startPlusDuration.isSameOrAfter(todaysSlotEndTime)) {
+            currentStart
+                .hours(0)
+                .minutes(0)
+                .seconds(0)
+                .add(1, 'day')
+                .add(dailySlotStartOffsetFromStart);
+        } else {
+            currentStart = startPlusDuration.clone();
+        }
     }
 
     res.status(200).json(freeSlots);
